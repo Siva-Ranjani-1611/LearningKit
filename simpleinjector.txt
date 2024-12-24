@@ -1,0 +1,17 @@
+var container = new UnityContainer();
+container.RegisterType<IDashboardRepository, DashboardRepository>(new HierarchicalLifetimeManager());
+config.DependencyResolver = new UnityResolver(container);
+
+container.Register<DashboardDbContext>(
+    new InjectionFactory(c => new DashboardDbContext())); 
+
+public static void RegisterComponents()    
+{
+    var container = new UnityContainer();
+    container.RegisterType<ITestService, TestService>();
+    DependencyResolver.SetResolver(new UnityDependencyResolver(container));
+}
+
+
+
+https://docs.simpleinjector.org/en/latest/webapiintegration.html

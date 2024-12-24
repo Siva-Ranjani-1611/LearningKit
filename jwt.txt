@@ -1,0 +1,117 @@
+
+
+using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using WebApplication1.Model;
+
+// for valid user area// for valid user area
+ string token = CreateToken(registration);
+
+            return Ok(token);
+
+//function for create token
+
+private string CreateToken(Registration registration)
+        {
+            List<Claim> claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, registration.Email),
+                new Claim(ClaimTypes.Role, "Admin")
+
+
+            };
+
+            var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes("this is my api key this is my api key"));
+
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+
+            var token = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.Now.AddDays(1),
+                signingCredentials: creds);
+
+            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+
+            return jwt;
+        }
+
+
+
+//program.cs / startup.cs
+
+using Microsoft.EntityFrameworkCore;
+using WebApplication1.Model;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Text;
+
+
+builder.Services.AddAuthorization();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+   .AddJwtBearer(options =>
+   {
+       options.TokenValidationParameters = new TokenValidationParameters
+       {
+           ValidateIssuerSigningKey = true,
+           IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8
+               .GetBytes("this is my api key this is my api key")),
+           ValidateIssuer = false,
+           ValidateAudience = false
+       };
+   });
+
+// in app seting 
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+//angular login check 
+if (res != "User not found." && res != "Wrong password") {
+          console.log(res);
+          localStorage.setItem('Token',res);
+          this.route.navigate(["reg-list"]);
+        }
+
+
+//intercepter 
+
+const Token = localStorage.getItem('Token');
+    if (Token) {
+      const cloned = request.clone(
+        {
+        headers: request.headers.set("Authorization",
+          "Bearer " +Token)
+      }
+
+      
+     
+      );
+        console.log(cloned);
+      return next.handle(cloned)
+    }
+    else {
+      return next.handle(request);
+    }
+
+
+
+//app.model
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: JwtInterceptor,
+      multi:true,
+      
+    }
+
+
+
